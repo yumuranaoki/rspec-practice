@@ -1,13 +1,15 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
-  it "is valid with a first name, last name, and email" do
-    user = User.new(
-      first_name: "Aaron",
-      last_name: 'Ramsey',
-      email: 'test@example.com'
+  before do
+    @user = FactoryBot.create(:user)
+    @project = @user.projects.create(
+      name: "Test Project"
     )
-    expect(user).to be_valid
+  end
+
+  it "is valid with a first name, last name, and email" do
+    expect(@user).to be_valid
   end
 
   it "is invalid without a first name" do
@@ -23,26 +25,16 @@ RSpec.describe User, type: :model do
   end
 
   it "is invalid with a duplication email address" do
-    User.create(
-      first_name: "Joe",
-      last_name: "Tester",
-      email: "test@example.com"
-    )
-    user = User.new(
-      first_name: "Jack",
-      last_name: "Tester",
-      email: "test@example.com"
-    )
+    user = FactoryBot.build(:user, email: "test@example.com")
     user.valid?
     expect(user.errors[:email]).to include("has already been taken")
   end
 
   it "returns a full name" do
-    user = User.create(
-      first_name: "Aaron",
-      last_name: "Ramsey",
-      email: "test@example.com"
-    )
-    expect(user.name).to eq "Aaron Ramsey"
+    expect(@user.name).to eq "Aaron Ramsey"
+  end
+
+  it "returns user name that match searched name" do
+    expect(User.search("Aaron")).to include(@user)
   end
 end
